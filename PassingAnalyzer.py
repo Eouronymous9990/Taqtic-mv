@@ -230,7 +230,42 @@ def process_side(dis_frame_side, pose_side, trail_side, w_side, h_side):
     return dis_frame_side, shooting_foot_distance, moving_leg_angle, ball_center_side, stationary_foot
 
 def process_back(dis_frame_back, pose_back, trail_back, stationary_foot, w_back, h_back):
-    # No needed visualizations or processing in the app
+    global last_right_edge, last_left_edge, frames_since_detection_back, last_valid_cpp_back
+    
+    rgb_frame_back = cv2.cvtColor(dis_frame_back, cv2.COLOR_BGR2RGB)
+    ball_center_back, CpP_back, cords_back, _ = detect_ball_person_for_back_frame(dis_frame_back)
+    
+    if ball_center_back is not None:
+        trail_back.append(ball_center_back)
+    
+    landmarks_back = detect_landmarks(rgb_frame_back, pose_back, w_back, h_back)
+    
+    if landmarks_back and last_valid_cpp_back is not None:
+        if stationary_foot == "l_foot" and "l_ankle" in landmarks_back and last_right_edge:
+            draw_points_and_lines(dis_frame_back, [landmarks_back["l_ankle"], last_right_edge])
+            l_ankle_ball_right_dis = math.dist(landmarks_back["l_ankle"], last_right_edge) * last_valid_cpp_back
+            corrected_distance = max(0, l_ankle_ball_right_dis - (STANDARD_BALL_DIAMETER_CM / 2))
+            
+            distance_text = f"{corrected_distance:.1f} CM"
+            if frames_since_detection_back > 0: 
+                distance_text += " (Est.)"
+            
+            #put_text_with_bg(dis_frame_back, distance_text, landmarks_back["l_ankle"])
+            
+        elif stationary_foot == "r_foot" and "r_ankle" in landmarks_back and last_left_edge:
+            draw_points_and_lines(dis_frame_back, [landmarks_back["r_ankle"], last_left_edge])
+            r_ankle_ball_left_dis = math.dist(landmarks_back["r_ankle"], last_left_edge) * last_valid_cpp_back
+            corrected_distance = max(0, r_ankle_ball_left_dis - (STANDARD_BALL_DIAMETER_CM / 2))
+            
+            distance_text = f"{corrected_distance:.1f} CM"
+            if frames_since_detection_back > 0:  
+                distance_text += " (Est.)"
+            
+            #put_text_with_bg(dis_frame_back, distance_text, landmarks_back["r_ankle"])
+            
+        #cv2.putText(dis_frame_back,stationary_foot, (10, h_back - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, 
+         #       (0, 255, 0) , 2)
+    
     return dis_frame_back
 
 def detect_frame(history):
