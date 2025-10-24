@@ -253,8 +253,8 @@ def display_frame(frame_side, frame_back, side_dis_width, side_dis_height, back_
     detection = {}
     l_knee_angle = r_knee_angle = trunk_angle = st_foot_ball_dis_back = None
 
-    pose_side_static = mp_pose.Pose(static_image_mode=True, model_complexity=2, min_detection_confidence=0.7, min_tracking_confidence=0.7)
-    pose_back_static = mp_pose.Pose(static_image_mode=True, model_complexity=2, min_detection_confidence=0.7, min_tracking_confidence=0.7)
+    pose_side_static = mp_pose.Pose(static_image_mode=True, model_complexity=1, min_detection_confidence=0.7, min_tracking_confidence=0.7)
+    pose_back_static = mp_pose.Pose(static_image_mode=True, model_complexity=1, min_detection_confidence=0.7, min_tracking_confidence=0.7)
 
     try:
         if frame_side is not None:
