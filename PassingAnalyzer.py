@@ -289,7 +289,7 @@ def detect_ball_person_for_back_frame(frame):
     
     return found_ball, found_cpp, found_ball_box, found_persons
 
-def process_shoot_back(dis_frame_back, pose_back, trail_back, stationary_foot, w_back, h_back):
+def process_back(dis_frame_back, pose_back, trail_back, stationary_foot, w_back, h_back):
     global last_right_edge, last_left_edge, frames_since_detection_back, last_valid_cpp_back
     
     rgb_frame_back = cv2.cvtColor(dis_frame_back, cv2.COLOR_BGR2RGB)
