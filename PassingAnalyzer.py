@@ -229,7 +229,67 @@ def process_side(dis_frame_side, pose_side, trail_side, w_side, h_side):
     stationary_foot = "r_foot" if moving_foot == "l_foot" else "l_foot"
     return dis_frame_side, shooting_foot_distance, moving_leg_angle, ball_center_side, stationary_foot
 
-def process_back(dis_frame_back, pose_back, trail_back, stationary_foot, w_back, h_back):
+
+def detect_ball_person_for_back_frame(frame):
+    global last_valid_box_back, last_valid_center_back, last_valid_cpp_back
+    global last_right_edge, last_left_edge, frames_since_detection_back
+    
+    yolo_result = yolo_model.predict(frame, verbose=False)[0]
+    found_persons = []
+    found_ball = None
+    found_ball_box = None
+    found_cpp = None
+    valid_ball_detected = False
+    
+    for box, cls_id, score in zip(yolo_result.boxes.xyxy, yolo_result.boxes.cls, yolo_result.boxes.conf):
+        cls_id = int(cls_id)
+        x1, y1, x2, y2 = map(int, box)
+        if score < SCORE_THRESHOLD:
+            continue
+            
+        if cls_id == 0:
+            found_persons.append([x1, y1, x2, y2])
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
+            cv2.putText(frame, f"Person {score:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+            
+        elif cls_id == 32:
+            width = x2 - x1
+            height = y2 - y1
+            ball_diameter = (width + height) / 2
+            if 10 < ball_diameter < 100 and not math.isnan(ball_diameter):
+                frames_since_detection_back = 0
+            
+                if ball_diameter > 0:
+                    found_cpp = STANDARD_BALL_DIAMETER_CM / ball_diameter
+                    last_valid_cpp_back = found_cpp
+                
+                center = ((x1 + x2) // 2, (y1 + y2) // 2)
+                found_ball = center
+                found_ball_box = (x1, y1, x2, y2)
+                
+                last_valid_center_back = found_ball
+                last_valid_box_back = found_ball_box
+                last_right_edge = (x2, (y1 + y2) // 2)
+                last_left_edge = (x1, (y1 + y2) // 2)
+                
+                valid_ball_detected = True
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.putText(frame, f"Ball {score:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+ 
+        
+        found_ball = last_valid_center_back
+        found_ball_box = last_valid_box_back
+        found_cpp = last_valid_cpp_back
+        
+        if last_valid_box_back:
+            x1, y1, x2, y2 = last_valid_box_back
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 255), 2)
+            cv2.putText(frame, f"Ball (Est. {frames_since_detection_back}f)", (x1, y1 - 10), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)
+    
+    return found_ball, found_cpp, found_ball_box, found_persons
+
+def process_shoot_back(dis_frame_back, pose_back, trail_back, stationary_foot, w_back, h_back):
     global last_right_edge, last_left_edge, frames_since_detection_back, last_valid_cpp_back
     
     rgb_frame_back = cv2.cvtColor(dis_frame_back, cv2.COLOR_BGR2RGB)
