@@ -303,8 +303,8 @@ def display_frame(frame_side, frame_back, side_dis_width, side_dis_height, back_
 def main(side_path, back_path):
     detections = []
 
-    pose_side = mp_pose.Pose(static_image_mode=False, model_complexity=2, min_detection_confidence=0.7, min_tracking_confidence=0.7)
-    pose_back = mp_pose.Pose(static_image_mode=False, model_complexity=2, min_detection_confidence=0.7, min_tracking_confidence=0.7)
+    pose_side = mp_pose.Pose(static_image_mode=False, model_complexity=1, min_detection_confidence=0.7, min_tracking_confidence=0.7)
+    pose_back = mp_pose.Pose(static_image_mode=False, model_complexity=1, min_detection_confidence=0.7, min_tracking_confidence=0.7)
 
     history = deque(maxlen=WINDOW_SIZE)
     trail_side = deque(maxlen=90)
