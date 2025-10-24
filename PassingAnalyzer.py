@@ -5,7 +5,7 @@ import numpy as np
 import math
 import csv
 import cv2
-
+last_valid_center_back=آNone
 yolo_model = YOLO("yolov8s.pt")
 mp_pose = mp.solutions.pose
 
